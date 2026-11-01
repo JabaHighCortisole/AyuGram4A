@@ -235,6 +235,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     private static final String EXTRA_ACTION_TOKEN = "actions.fulfillment.extra.ACTION_TOKEN";
 
     private boolean finished;
+    private AyuScheduleLockOverlay ayuScheduleLockOverlay;
     private String videoPath;
     private String voicePath;
     private String sendingText;
@@ -5615,6 +5616,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     @Override
     protected void onPause() {
+        if (ayuScheduleLockOverlay != null) {
+            ayuScheduleLockOverlay.stop();
+        }
         super.onPause();
         isResumed = false;
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.stopAllHeavyOperations, 4096);
@@ -5749,6 +5753,15 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     protected void onResume() {
         super.onResume();
+        if (frameLayout != null) {
+            if (ayuScheduleLockOverlay == null) {
+                ayuScheduleLockOverlay = new AyuScheduleLockOverlay(this);
+                frameLayout.addView(ayuScheduleLockOverlay, new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            }
+            ayuScheduleLockOverlay.start();
+            ayuScheduleLockOverlay.bringToFront();
+        }
         isResumed = true;
         if (onResumeStaticCallback != null) {
             onResumeStaticCallback.run();
@@ -6993,6 +7006,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     @Override
     public void onBackPressed() {
+        if (ayuScheduleLockOverlay != null && ayuScheduleLockOverlay.isBlocking()) {
+            return;
+        }
         if (FloatingDebugController.onBackPressed()) {
             return;
         }
