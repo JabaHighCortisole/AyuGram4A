@@ -20,9 +20,11 @@ final class AyuSchedulePolicy {
         boolean eveningWindow = day >= Calendar.MONDAY
                 && day <= Calendar.SATURDAY
                 && minuteOfDay >= (15 * 60 + 50);
-        boolean overnightTail = day >= Calendar.TUESDAY
-                && day <= Calendar.SUNDAY
-                && minuteOfDay < (2 * 60);
+        // Calendar weekday constants are not ordered Sunday-to-Saturday:
+        // Sunday is 1, Monday is 2, ... Saturday is 7.
+        boolean overnightDay = day == Calendar.SUNDAY
+                || (day >= Calendar.TUESDAY && day <= Calendar.SATURDAY);
+        boolean overnightTail = overnightDay && minuteOfDay < (2 * 60);
         return eveningWindow || overnightTail;
     }
 }
